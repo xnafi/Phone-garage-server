@@ -1,0 +1,22 @@
+[
+  {
+    "name": "samsung",
+    "image": "https://www.freepnglogos.com/uploads/classic-samsung-logo-png-0.png"
+  },
+  {
+    "name": "xiomi",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTarA6hEjG5NrTqioVa3Di4aymmdhrBqvMdsOV8c3xPwLeou7I&s"
+  },
+  {
+    "name": "iphone",
+    "image" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ049Ithd3tfhC5jIGFcWVu4zAbx1QDOYLAhFafvWiaG97k3CbH&s"
+  },
+  {
+    "name": "huawei",
+    "image" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVAwp0HwN0GLm6_cN8ajnIroakt1KPw0d_fOeHDCYtbetzHAM&s"
+  },
+  {
+    "name": "nokia",
+    "image" : "https://www.freepnglogos.com/uploads/nokia-with-hands-connecting-people-png-22.png"
+  }
+]
