@@ -109,6 +109,12 @@ const run = async () => {
             const result = await usersCollection.findOne(query)
             res.send(result)
         })
+        // get all items 
+        app.get('/items', async (req, res) => {
+            const query = {}
+            const result = await postCollection.find(query).toArray()
+            res.send(result)
+        })
         // add a item
         app.post('/items', async (req, res) => {
             const item = req.body
@@ -116,11 +122,35 @@ const run = async () => {
             res.send(result)
 
         })
-        // get all items
+        // get items by name
         app.get('/items', async (req, res) => {
             const query = req.query.name
             const filter = { name: query }
             const result = await postCollection.find(filter).toArray()
+            res.send(result)
+        })
+        // item report to admin
+        app.put('/items/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    report: true
+                }
+            }
+            const result = await postCollection.updateOne(query, updateDoc, options)
+            res.send(result)
+        })
+        app.get('/items/report', async (req, res) => {
+            const query = { report: true }
+            const result = await postCollection.find(query).toArray()
+            res.send(result)
+        })
+        app.delete('/items/report/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await postCollection.deleteOne(query)
             res.send(result)
         })
 
