@@ -5,6 +5,7 @@ const app = express()
 const port = process.env.PORT || 5000
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const e = require('express');
 
 
 app.use(cors())
@@ -53,12 +54,44 @@ const run = async () => {
             const result = await usersCollection.find(query).toArray()
             res.send(result)
         })
+        app.patch('/users/sellers/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { email: email }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    isAdmin: true
+                }
+            }
+            const result = await usersCollection.updateOne(query, updateDoc, options)
+
+            res.send(result)
+        })
+        app.get('/users/sellers/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { email: email }
+            const result = await usersCollection.findOne(query)
+            res.send(result)
+        })
         app.delete('/users/sellers/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
             const result = await usersCollection.deleteOne(query)
             res.send(result)
         })
+        app.patch('/users/sellers/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    verify: true
+                }
+            }
+            const result = await usersCollection.updateOne(query, updateDoc, options)
+            res.send(result)
+        })
+
         app.get('/users/buyers', async (req, res) => {
             const query = { role: "buyer" }
             const result = await usersCollection.find(query).toArray()
