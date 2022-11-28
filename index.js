@@ -26,6 +26,8 @@ const run = async () => {
         const usersCollection = client.db('phone_garage').collection('users')
         // Posted Items
         const postCollection = client.db('phone_garage').collection('postItems')
+        // Booking
+        const bookingCollection = client.db('phone_garage').collection('myBooking')
 
 
         app.get('/brands', async (req, res) => {
@@ -81,12 +83,13 @@ const run = async () => {
         app.post('/users/sellers/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
+            const options = { upsert: true }
             const updateDoc = {
                 $set: {
                     verify: true
                 }
             }
-            const result = await usersCollection.updateOne(query, updateDoc)
+            const result = await usersCollection.updateOne(query, updateDoc, options)
             res.send(result)
         })
         app.delete('/users/sellers/:id', async (req, res) => {
@@ -118,28 +121,69 @@ const run = async () => {
             const result = await usersCollection.findOne(query)
             res.send(result)
         })
-        // get items by name
-        app.get('/items', async (req, res) => {
-            const query = req.query.name
-            const filter = { name: query }
-            const result = await postCollection.find(filter).toArray()
-            res.send(result)
-        })
-        app.get('/items', async (req, res) => {
-            const query = {}
-            const result = await postCollection.find(query).toArray()
-            res.send(result)
-        })
-        // add a item
+        // items
         app.post('/items', async (req, res) => {
             const item = req.body
             const result = await postCollection.insertOne(item)
             res.send(result)
-
         })
 
+        app.get('/items', async (req, res) => {
+            console.log(req.query.id)
+            let query = {}
+            if (req.query.email) {
+                query = {
+                    email: req.query.email,
+                }
+            } else if (req.query.name) {
+                query = {
+                    name: req.query.name
+                }
+            }
+
+            const result = await postCollection.find(query).toArray()
+            console.log(result);
+            res.send(result)
+        })
+
+        app.get('/advertise/item', async (req, res) => {
+            const query = { advertise: true }
+            const result = await postCollection.find(query).toArray()
+            res.send(result)
+        })
+        app.get('/items/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await postCollection.findOne(query)
+            res.send(result)
+        })
+
+        app.post('/items/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            // const options = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    advertise: true
+                }
+            }
+            const result = await postCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
+        app.delete('/items/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await postCollection.deleteOne(query)
+            res.send(result)
+        })
 
         // item report to admin
+
+        app.get('/items/report', async (req, res) => {
+            const query = { report: true }
+            const result = await postCollection.find(query).toArray()
+            res.send(result)
+        })
         app.put('/items/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
@@ -152,30 +196,32 @@ const run = async () => {
             const result = await postCollection.updateOne(query, updateDoc, options)
             res.send(result)
         })
+
         app.delete('/items/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
             const result = await postCollection.deleteOne(query)
             res.send(result)
         })
-        app.get('/items/report', async (req, res) => {
-            const query = { report: true }
-            const result = await postCollection.find(query).toArray()
+
+        // booking item save 
+        app.post('/booking', async (req, res) => {
+            const newBooking = req.body
+            const result = await bookingCollection.insertOne(newBooking)
             res.send(result)
         })
-        // to get add item which user
-        app.get('/items/:email', async (req, res) => {
-            const email = req.params.email
-            const query = { email: email }
-            const result = await postCollection.find(query).toArray()
+
+        app.get('/booking', async (req, res) => {
+            let query = {}
+            if (req.query.email) {
+                query = {
+                    bookingUserEmail: req.query.email
+                }
+            }
+            const result = await bookingCollection.find(query).toArray()
             res.send(result)
         })
-        app.delete('/items/report/:id', async (req, res) => {
-            const id = req.params.id
-            const query = { _id: ObjectId(id) }
-            const result = await postCollection.deleteOne(query)
-            res.send(result)
-        })
+
 
 
     } catch (error) {
