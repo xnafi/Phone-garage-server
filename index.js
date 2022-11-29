@@ -5,6 +5,7 @@ const app = express()
 const port = process.env.PORT || 5000
 const cors = require('cors')
 const jwt = require('jsonwebtoken');
+const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 
 app.use(cors())
@@ -30,6 +31,23 @@ const run = async () => {
         const bookingCollection = client.db('phone_garage').collection('myBooking')
 
 
+        // payment
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body;
+            const price = booking.productPrice;
+            const amount = parseInt(price) * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ]
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
         app.get('/brands', async (req, res) => {
             const query = {}
             const result = await brandCollection.find(query).toArray()
@@ -118,6 +136,7 @@ const run = async () => {
         app.get('/users/:email', async (req, res) => {
             const email = req.params.email
             const query = { email: email }
+            console.log("🚀 ~ file: index.js ~ line 139 ~ app.get ~ email", email)
             const result = await usersCollection.findOne(query)
             res.send(result)
         })
@@ -129,7 +148,6 @@ const run = async () => {
         })
 
         app.get('/items', async (req, res) => {
-            console.log(req.query.id)
             let query = {}
             if (req.query.email) {
                 query = {
@@ -140,9 +158,13 @@ const run = async () => {
                     name: req.query.name
                 }
             }
+            if (req.query.isSold) {
+                query = {
+                    isSold: req.query.isSold
+                }
+            }
 
             const result = await postCollection.find(query).toArray()
-            console.log(result);
             res.send(result)
         })
 
@@ -161,15 +183,17 @@ const run = async () => {
         app.post('/items/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
-            // const options = { upsert: true }
+            const options = { upsert: true }
             const updateDoc = {
                 $set: {
                     advertise: true
                 }
             }
-            const result = await postCollection.updateOne(query, updateDoc)
+            const result = await postCollection.updateOne(query, updateDoc, options)
             res.send(result)
         })
+
+
         app.delete('/items/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
@@ -193,9 +217,10 @@ const run = async () => {
                     report: true
                 }
             }
-            const result = await postCollection.updateOne(query, updateDoc, options)
+            const result = await postCollection.updateOne(query, updateDoc)
             res.send(result)
         })
+  
 
         app.delete('/items/:id', async (req, res) => {
             const id = req.params.id
@@ -205,6 +230,7 @@ const run = async () => {
         })
 
         // booking item save 
+
         app.post('/booking', async (req, res) => {
             const newBooking = req.body
             const result = await bookingCollection.insertOne(newBooking)
@@ -221,6 +247,43 @@ const run = async () => {
             const result = await bookingCollection.find(query).toArray()
             res.send(result)
         })
+        app.get('/booking/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await bookingCollection.findOne(query)
+            res.send(result)
+        })
+        app.delete('/booking/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await bookingCollection.deleteOne(query)
+            res.send(result)
+        })
+        app.post('/booking/:id', async (req, res) => {
+            const booked = req.body
+
+            const query = { _id: ObjectId(booked.id) }
+            // const options = { upsert: true}
+            const updateDoc = {
+                $set: {
+                    isSold: 'sold',
+                    transationId: booked.transationId
+
+                }
+            }
+
+            const result = await bookingCollection.updateOne(query, updateDoc)
+            console.log(booked.productId);
+            const quer = { _id: ObjectId(booked.productId) }
+            const updateDo = {
+                $set: {
+                    isSold: "sold"
+                }
+            }
+            const rest = await postCollection.updateOne(quer, updateDo)
+            res.send(result)
+        })
+
 
 
 
