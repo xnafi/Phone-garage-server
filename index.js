@@ -14,6 +14,26 @@ app.use(express.json())
 
 app.get('/', (req, res) => res.send('Hello phone garage'))
 
+
+function varifyToken(req, res, next) {
+    const auth = req.headers.authorization
+    if (!auth) {
+        return res.status(401).send('unauthorize user access')
+    }
+    const token = auth.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+        if (err) {
+            console.log(err);
+            return res.status(403).send('forbidden access')
+
+        }
+        req.decoded = decoded;
+        next()
+    })
+
+
+}
+
 // database
 
 const uri = process.env.DB_URI
@@ -30,6 +50,20 @@ const run = async () => {
         // Booking
         const bookingCollection = client.db('phone_garage').collection('myBooking')
 
+
+
+        // jwt token
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email
+            const query = { email: email }
+            const exits = await usersCollection.findOne(query)
+            if (exits) {
+                const token = jwt.sign({ email }, process.env.JWT_KEY, { expiresIn: '1d' })
+                return res.send({ accessToken: token })
+            }
+            res.status(403).send('forbidden access')
+
+        })
 
         // payment
         app.post('/create-payment-intent', async (req, res) => {
@@ -65,7 +99,13 @@ const run = async () => {
             res.send(result)
         })
         app.get('/users', async (req, res) => {
-            const query = {}
+            let query = {}
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+
+            }
             const result = await usersCollection.find(query).toArray()
             res.send(result)
         })
@@ -136,7 +176,6 @@ const run = async () => {
         app.get('/users/:email', async (req, res) => {
             const email = req.params.email
             const query = { email: email }
-            console.log("🚀 ~ file: index.js ~ line 139 ~ app.get ~ email", email)
             const result = await usersCollection.findOne(query)
             res.send(result)
         })
@@ -220,7 +259,7 @@ const run = async () => {
             const result = await postCollection.updateOne(query, updateDoc)
             res.send(result)
         })
-  
+
 
         app.delete('/items/:id', async (req, res) => {
             const id = req.params.id

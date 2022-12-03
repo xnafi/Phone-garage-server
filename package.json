@@ -1,11 +1,10 @@
 {
   "name": "phone-garage-server",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "start-dev": "nodemon index.js",
+    "start": "nodemon index.js",
+    "build": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -21,5 +20,15 @@
     "npm": "^9.1.2",
     "react-jwt": "^1.1.7",
     "stripe": "^11.1.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/programming-hero-web-course-4/b612-used-products-resale-clients-side-xnafi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/programming-hero-web-course-4/b612-used-products-resale-clients-side-xnafi/issues"
+  },
+  "homepage": "https://github.com/programming-hero-web-course-4/b612-used-products-resale-clients-side-xnafi#readme",
+  "description": ""
 }
